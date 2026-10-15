@@ -4,15 +4,15 @@
 - **Werdykt:** MERGE
 
 ## 3 najważniejsze powody
-1. Zmiana ogranicza się do jednej linii tekstu w HTML (`app/web/html/index.html:64`): bez sekretów, obrazów, workflow ani zasobów Kubernetes.
-2. Wszystkie wymagane checki CI są zielone (helm lint, testy orders-api i payments).
-3. Opis PR-a jasno mówi, co się zmienia i dlaczego, oraz podaje zakres, ryzyko i sposób wycofania.
+1. Zmiana dotyczy tylko jednej linii tekstu w HTML (`app/web/html/index.html:64`) i nie rusza logiki, Helma ani workflow.
+2. Diff nie łamie żadnej reguły blokującej: nie ma sekretów, obrazów, `permissions` ani akcji GitHub.
+3. Opis mówi, co i dlaczego się zmienia, opisuje ryzyko i testy. Checki CI są zielone.
 
 ## Blokery
 brak
 
 ## Uwagi do poprawy
-brak
+brak. Drobna uwaga poza regułami: opis wymienia jako „planowane” test ręczny w przeglądarce (`docker compose up`) i warto go zrobić przed wdrożeniem.
 
 ## GitHub Actions
 | Check | Stan |
@@ -20,8 +20,8 @@ brak
 | helm lint | pass |
 | test orders-api (Python 3.12, uv) | pass |
 | test payments (Go 1.23) | pass |
-| build ${{ matrix.service }} | skipping (uruchamiany tylko po push do main) |
-| deploy → ${{ vars.K8S_NAMESPACE }} | skipping (uruchamiany tylko po push do main) |
+| build ${{ matrix.service }} | skipping |
+| deploy → ${{ vars.K8S_NAMESPACE }} | skipping |
 
 ## Uzasadnienie
-To kosmetyczna zmiana tekstu stopki. Nie łamie żadnej reguły z REVIEW.md, a CI przechodzi. Ręczny test w przeglądarce, opisany w PR jako planowany, warto wykonać, ale nie blokuje merge.
+To kosmetyczna zmiana tekstu stopki z rzetelnym opisem i zielonym CI. Pominięte build i deploy to normalne zachowanie dla PR-a, a nie czerwony check.
