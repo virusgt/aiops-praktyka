@@ -1,10 +1,30 @@
 {
   "permissions": {
-    "allow": ["Bash(kubectl get:*)", "Bash(kubectl describe:*)",
-              "Bash(kubectl logs:*)", "Bash(kubectl top:*)", "Bash(k8sgpt analyze:*)"],
-    "ask":   ["Bash(kubectl set:*)", "Bash(kubectl patch:*)", "Bash(kubectl edit:*)",
-              "Bash(kubectl rollout:*)", "Bash(kubectl apply:*)"],
-    "deny":  ["Bash(kubectl get secret:*)", "Bash(kubectl get secrets:*)", "Bash(*secret*)",
-              "Bash(kubectl delete:*)", "Bash(kubectl exec:*)"]
+    "allow": [
+      "Bash(kubectl get:*)",
+      "Bash(kubectl describe:*)",
+      "Bash(kubectl logs:*)",
+      "Bash(kubectl top:*)",
+      "Bash(k8sgpt analyze:*)"
+    ],
+    "ask": [
+      "Bash(kubectl set:*)",
+      "Bash(kubectl patch:*)",
+      "Bash(kubectl edit:*)",
+      "Bash(kubectl rollout:*)",
+      "Bash(kubectl apply:*)"
+    ],
+    "deny": [
+      "Bash(kubectl get secret:*)",
+      "Bash(kubectl get secrets:*)",
+      "Bash(*secret*)",
+      "Bash(kubectl delete:*)",
+      "Bash(kubectl exec:*)",
+      "Read(./**/.env)",
+      "Read(./**/*.tfstate)",
+      "Bash(gh pr merge:*)",
+      "Bash(gh pr review:*)",
+      "Bash(gh pr close:*)"
+    ]
   }
 }
