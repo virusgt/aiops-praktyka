@@ -152,7 +152,22 @@ jobs:
       - name: helm upgrade
         run: |
           helm version --short
-          helm upgrade kantyna app/deploy/helm/kantyna \
+          # Zachowaj zatwierdzona allowliste ALB przed helm upgrade.
+          kubectl -n "$K8S_NAMESPACE" get ingress kantyna-web -o json | python3 -c '
+          import ipaddress, json, os, pathlib, sys
+          data = json.load(sys.stdin)
+          raw = data["metadata"]["annotations"]["alb.ingress.kubernetes.io/inbound-cidrs"]
+          cidrs = [x.strip() for x in raw.split(",") if x.strip()]
+          if len(cidrs) != 10 or len(set(cidrs)) != 10:
+              raise SystemExit("BLAD: oczekiwano 10 unikalnych adresow CIDR")
+          for cidr in cidrs:
+              ipaddress.ip_network(cidr, strict=True)
+          file = pathlib.Path(os.environ["RUNNER_TEMP"]) / "kantyna-ingress.json"
+          values = {"ingress": {"annotations": {"alb.ingress.kubernetes.io/inbound-cidrs": ",".join(cidrs)}}}
+          file.write_text(json.dumps(values) + chr(10))
+          print("Zachowano 10 adresow IP")
+          '
+          helm upgrade kantyna app/deploy/helm/kantyna --server-side=false --values "$RUNNER_TEMP/kantyna-ingress.json" \
             --namespace "$K8S_NAMESPACE" \
             --reuse-values \
             --set global.imageRegistry="$ECR_REGISTRY" \
