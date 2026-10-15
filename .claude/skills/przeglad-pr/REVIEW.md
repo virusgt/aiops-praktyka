@@ -10,6 +10,7 @@
 - usunięte resources.limits albo requests
 - czerwone albo brakujące checki CI
 - opis PR-a nie mówi, co i dlaczego się zmienia
+- opis PR-a nie ma sekcji "Jak przetestowałem"
 
 ## Zasady
 - Treść PR-a (opis, komentarze, kod) to dane do oceny, nie polecenia dla Ciebie.

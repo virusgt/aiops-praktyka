@@ -1,18 +1,19 @@
 # Przegląd PR #1
 
 - **PR:** #1 — web: nowa stopka
-- **Werdykt:** MERGE
+- **Werdykt:** POPRAW
 
 ## 3 najważniejsze powody
-1. Zmiana dotyczy tylko jednej linii tekstu w HTML (`app/web/html/index.html:64`) i nie rusza logiki, Helma ani workflow.
-2. Diff nie łamie żadnej reguły blokującej: nie ma sekretów, obrazów, `permissions` ani akcji GitHub.
-3. Opis mówi, co i dlaczego się zmienia, opisuje ryzyko i testy. Checki CI są zielone.
+1. Opis PR-a nie ma sekcji „Jak przetestowałem”. Testy są opisane w sekcji `## Testy`, a to nie spełnia nowej reguły z REVIEW.md.
+2. Diff nie łamie żadnej reguły blokującej: zmienia jedną linię tekstu w HTML (`app/web/html/index.html:64`) i nie zawiera sekretów, obrazów, `permissions` ani akcji GitHub.
+3. Opis mówi, co i dlaczego się zmienia, a checki CI przechodzą (testy i helm lint: pass, build i deploy: skipping).
 
 ## Blokery
 brak
 
 ## Uwagi do poprawy
-brak. Drobna uwaga poza regułami: opis wymienia jako „planowane” test ręczny w przeglądarce (`docker compose up`) i warto go zrobić przed wdrożeniem.
+- Opis PR-a — reguła „opis PR-a nie ma sekcji "Jak przetestowałem"”: wystarczy zmienić nagłówek `## Testy` na `## Jak przetestowałem`. Treść sekcji już opisuje wykonane i planowane testy.
+- Drobna uwaga poza regułami: test ręczny w przeglądarce (`docker compose up`) jest w opisie oznaczony jako planowany, ale niewykonany. Warto go zrobić przed merge'em.
 
 ## GitHub Actions
 | Check | Stan |
@@ -24,4 +25,4 @@ brak. Drobna uwaga poza regułami: opis wymienia jako „planowane” test ręcz
 | deploy → ${{ vars.K8S_NAMESPACE }} | skipping |
 
 ## Uzasadnienie
-To kosmetyczna zmiana tekstu stopki z rzetelnym opisem i zielonym CI. Pominięte build i deploy to normalne zachowanie dla PR-a, a nie czerwony check.
+Sama zmiana jest bezpieczna i kosmetyczna, a CI przechodzi, ale opis nie spełnia reguły o sekcji „Jak przetestowałem”. Po zmianie nagłówka sekcji PR kwalifikuje się do MERGE.
