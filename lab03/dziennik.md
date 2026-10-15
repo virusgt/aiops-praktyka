@@ -27,7 +27,12 @@ Przygotowanie bezpiecznego pipeline'u GitHub Actions, który:
 | 5 | `zizmor`: 2 pominięte ustalenia | Ja: standardowa kontrola może nie pokazywać wszystkich uwag | `zizmor --offline --persona auditor .github/workflows/ci.yml` | Wykryto dwie uwagi `undocumented-permissions` | ✅ |
 | 6 | Brak komentarzy przy `id-token: write` | Ja: należy uzasadnić uprawnienia AWS OIDC | Wynik zizmor dla jobów `build` i `deploy` | Dodanie komentarzy wyjaśniających użycie OIDC | ✅ |
 | 7 | Ponowna kontrola bezpieczeństwa | Ja: po poprawce narzędzia powinny przejść bez ustaleń | `actionlint` i `zizmor --offline --persona auditor` | Oba programy zwróciły `rc=0`; `No findings to report` | ✅ |
-| 8 | Brak `AWS_ROLE_ARN` oraz `ECR_REGISTRY` | Ja: nie można jeszcze zweryfikować logowania OIDC i wdrożenia | `gh variable list --repo virusgt/aiops-praktyka` | Oczekiwanie na wartości od prowadzącego | ⏳ |
+| 8 | Brak zmiennych GitHub | Ja: wymagane AWS OIDC i ECR | `gh variable list` | Skonfigurowano `AWS_ROLE_ARN`, `ECR_REGISTRY`, `K8S_NAMESPACE` | ✅ |
+| 9 | Brak repozytoriow ECR uczestnika | Ja: pipeline nie bedzie mogl wyslac obrazow | `aws ecr describe-repositories` | Prowadzacy utworzyl 4 repozytoria `piotr-k/kantyna/*` | ✅ |
+| 10 | Pierwszy pipeline zakonczyl sie bledem | AI: konflikt Helm 4 Server-Side Apply | Log joba `deploy`, `managedFields` | Wykryto konflikt obrazu `web` oraz adnotacji Ingress | ✅ |
+| 11 | Rozbieznosc listy IP | Ja: nie wolno nadpisac dostepu do ALB | Porownanie rewizji Helm i Ingress | Helm: 2 CIDR, Kubernetes: 10; prowadzacy potwierdzil wszystkie 10 | ✅ |
+| 12 | Przygotowanie poprawki | AI: override wartosci i `--server-side=false` | Helm dry-run, `actionlint`, `zizmor` | Zachowanie 10 CIDR, poprawiony workflow | ✅ |
+| 13 | Drugi pipeline i test koncowy | Ja: weryfikacja deploymentow i aplikacji | GitHub Actions, `helm list`, `setup/check.sh piotr-k` | Pipeline SUCCESS, Helm deployed, wynik 11/11 | ✅ |
 
 ## Sugestia AI, której nie wdrożyłem
 
@@ -46,14 +51,60 @@ Kontrola zakończyła się bez ustaleń i kodem `rc=0`.
 ## Aktualny stan
 
 - [x] Workflow `.github/workflows/ci.yml` utworzony.
-- [x] `actionlint` bez błędów.
-- [x] `zizmor` w trybie offline auditor bez ustaleń.
-- [x] Akcje przypięte do pełnych SHA, sprawdzonych względem tagów.
+- [x] `actionlint` bez bledow.
+- [x] `zizmor` offline auditor bez ustalen.
+- [x] Akcje GitHub przypiete do pelnych SHA.
 - [x] `K8S_NAMESPACE=piotr-k` skonfigurowane.
-- [ ] `AWS_ROLE_ARN` skonfigurowane.
-- [ ] `ECR_REGISTRY` skonfigurowane.
-- [ ] Pierwszy przebieg GitHub Actions zakończony sukcesem.
-- [ ] Cztery Deploymenty działają na obrazach oznaczonych SHA commita.
-- [ ] `setup/check.sh piotr-k` potwierdza `SUKCES: 11/11` po wdrożeniu.
+- [x] `AWS_ROLE_ARN` skonfigurowane.
+- [x] `ECR_REGISTRY` skonfigurowane.
+- [x] Cztery repozytoria ECR przygotowane.
+- [x] GitHub Actions zakonczony sukcesem.
+- [x] Cztery Deploymenty na obrazach z SHA commita.
+- [x] Zachowano 10 dozwolonych adresow CIDR w Ingress.
+- [x] `setup/check.sh piotr-k`: SUKCES 11/11.
 
-**Status:** lokalne przygotowanie pipeline'u zakończone, wdrożenie oczekuje na konfigurację AWS OIDC.
+## Podsumowanie wdrozen — 15.10.2026
+
+### Pierwszy przebieg
+
+- Run ID: `38716716092`
+- Commit: `ee56f95`
+- Wynik: FAILURE.
+- Testy Python, Go, Helm oraz budowanie 4 obrazow: PASS.
+- Problem: Helm 4 Server-Side Apply zglosil konflikt pol.
+- Konflikty: obraz Deploymentu `kantyna-web` oraz adnotacja
+  `alb.ingress.kubernetes.io/inbound-cidrs`.
+- Helm: rewizja 2, status `failed`.
+- Efekt: czesciowe wdrozenie 3 z 4 nowych obrazow.
+
+### Naprawa
+
+- Potwierdzono z prowadzacym, ze nalezy zachowac wszystkie 10 CIDR.
+- Dodano odczyt biezacej listy CIDR przed aktualizacja.
+- Lista jest przekazywana do Helm jako dodatkowe wartosci.
+- Dodano do `helm upgrade` opcje `--server-side=false`.
+- Kontrole `actionlint` i `zizmor`: PASS.
+
+### Drugi przebieg
+
+- Run ID: `38723956665`
+- Commit: `bf2632bb9a5f8120aaca8c138e0c0cfdd75781a9`
+- Wynik: SUCCESS.
+- Testy, budowanie obrazow, ECR i wdrozenie: PASS.
+- Helm: rewizja 3, status `deployed`.
+- Wszystkie 4 Deploymenty uzywaja nowego SHA.
+- Ingress: zachowano 10 CIDR.
+- Testy `/healthz`: PASS.
+- Test funkcjonalny Kantyny: **SUKCES 11/11**.
+
+### Wnioski
+
+1. Testy CI nie gwarantuja jeszcze poprawnego wdrozenia.
+2. Helm 4 moze wykrywac konflikty pol zmienionych recznie.
+3. Zmian nie nalezy wymuszac bez sprawdzenia ich skutkow.
+4. Sugestie AI wymagaja weryfikacji, szczegolnie przy uprawnieniach.
+5. Docelowo lista CIDR powinna byc przechowywana jako
+   zatwierdzona konfiguracja deklaratywna, a nie odczytywana
+   z aktualnego stanu klastra.
+
+**Status koncowy Lab03: ZALICZONY — CI/CD SUCCESS, KANTYNA 11/11.**
